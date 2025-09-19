@@ -1,0 +1,49 @@
+% Parámetros físicos
+eps_ox = 3.45e-11;   % permitividad del óxido (F/m)
+tox = 9e-9;          % espesor del óxido (m)
+Cox = eps_ox/tox;    % capacitancia por unidad de área
+
+% Geometría
+W = 50e-6;   % ancho (m) -> arbitrario, escala
+L = 0.5e-6;  % largo (m)
+WoverL = W/L;
+
+% NMOS parámetros
+Vtn = 0.7;       % Threshold NMOS
+mu_n = 350e-4;   % movilidad (cm^2/Vs -> m^2/Vs) => 350 cm^2/Vs = 0.035 m^2/Vs
+lambda_n = 0.02; % channel-length modulation
+
+% PMOS parámetros
+Vtp = -0.8;      % Threshold PMOS
+mu_p = 100e-4;   % movilidad PMOS -> 100 cm^2/Vs = 0.01 m^2/Vs
+lambda_p = 0.02;
+
+% Condiciones
+Vds = 3;
+Vgs = 0:0.01:3;
+
+% NMOS Id
+Id_n = zeros(size(Vgs));
+for i=1:length(Vgs)
+    if Vgs(i) > Vtn
+        Id_n(i) = 0.5*mu_n*Cox*WoverL*(Vgs(i)-Vtn)^2*(1+lambda_n*Vds);
+    end
+end
+
+% PMOS Id (tomamos |Vgs| y |Vtp|)
+Id_p = zeros(size(Vgs));
+for i=1:length(Vgs)
+    if Vgs(i) > abs(Vtp)
+        Id_p(i) = 0.5*mu_p*Cox*WoverL*(Vgs(i)-abs(Vtp))^2*(1+lambda_p*Vds);
+    end
+end
+
+% Graficar
+figure;
+plot(Vgs, Id_n*1e6,'b','LineWidth',2); hold on;
+plot(Vgs, Id_p*1e6,'r','LineWidth',2);
+grid on;
+xlabel('|V_{GS}| [V]');
+ylabel('I_D [µA]');
+title('I_D vs |V_{GS}| para NMOS y PMOS (W/L=100, V_{DS}=3V)');
+legend('NMOS','PMOS');
